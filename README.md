@@ -120,9 +120,9 @@ Data analysis
 -------------
 
 You can do whatever you want, it just simple text data that can be feed
-to file or a pipe. Import to program, spreadsheet, python, R, gnuplot,
-export to InfluxDB, Prometheus, Kafka. For quick and dirty work, one can
-use `awk`, `sort`, or my command-line program
+to file or a pipe. Import to program, spreadsheet, Python, R, Octave,
+gnuplot, export to InfluxDB, Prometheus, Kafka, MQTT. For quick and dirty
+work, one can use `awk`, `sort`, or my command-line program
 [kolumny](https://github.com/baryluk/kolumny). There are no limits.
 
 Also program is simple enough that you can modify it to directly process
@@ -187,3 +187,14 @@ Power Delivery type detection does not work.
 Firmware update still requires Windows. Running in qemu / virt-manager,
 and doing USB redirect works for this purposes. Unlikely to be
 implemented.
+
+FAQ
+---
+
+Will you add ability to write to X, Y or integrate with Z? No. Just write
+adapter that read the decoded data via a pipe and writes what you need to
+the system of your choice. It is way more modular, easier to implement,
+and makes long term maintance trivial. The current `fnirsi_logger.py` has
+no dependencies and no configuration. It just works. Adding more would
+make it harder to use and maintain. (I do have adapter that writes output
+to InfluxDB, but it is not a part of this project - by design).
