@@ -34,7 +34,7 @@ Format is space separated text file.
 
 ```
 
-timestamp sample_in_packet voltage_V current_A dp_V dn_V temp_C_ema energy_Wh capacity_Ah
+timestamp sample_in_packet voltage_V current_A dp_V dn_V temp_C_ema energy_Ws capacity_As
 1657568326.775 0 0.00000 0.00011 1.184 1.031 30.500 0.000000 0.000001
 1657568326.785 1 0.00000 0.00000 1.184 1.033 30.500 0.000000 0.000001
 1657568326.795 2 0.00000 0.00011 1.184 1.030 30.500 0.000000 0.000002

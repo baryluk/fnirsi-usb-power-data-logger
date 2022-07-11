@@ -107,7 +107,7 @@ def main():
     first_data_point = True
 
     print()  # Extra line to concatenation work better in gnuplot.
-    print("timestamp sample_in_packet voltage_V current_A dp_V dn_V temp_C_ema energy_Wh capacity_Ah")
+    print("timestamp sample_in_packet voltage_V current_A dp_V dn_V temp_C_ema energy_Ws capacity_As")
 
     def decode(data):
         nonlocal temp_ema, energy, capacity, first_data_point

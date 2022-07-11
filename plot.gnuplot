@@ -1,13 +1,13 @@
 #!/usr/bin/env -S gnuplot -c
 
-if (ARGC <= 1) {
-  f = "live.txt"
-} else {
+if (ARGC >= 1) {
   f = ARG1
+} else {
+  f = "live.txt"
 }
 
 LIVE = 0
-if (ARGC <= 2) {
+if (ARGC >= 2) {
   if (ARG2 eq "--live") {
     LIVE = 1
   } else {
@@ -47,7 +47,7 @@ set multiplot layout 5,1
 set yrange [*<2.0:5.2<*]
 
 plot f u 1:3 w steps lw 2 title "Voltage", \
-   "" u 1:4 w steps lw 2 axis x1y2 title "Current"
+    "" u 1:4 w steps lw 2 axis x1y2 title "Current"
 
 
 unset y2label
@@ -102,7 +102,11 @@ set output "plot-iv.png"
 unset y2label
 unset y2tics
 
+set xdata  # revert set xdata time
+set format x "%.3f"
 set xlabel "Current [A]"
+
+set format y "%.3f"
 set ylabel "Voltage [V]"
 
 set xrange [0:]
@@ -111,4 +115,3 @@ set yrange [0:]
 plot f u 4:3 w steps lw 2 title "V(I)"
 
 unset output
-
