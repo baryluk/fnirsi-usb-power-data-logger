@@ -1,5 +1,5 @@
-Data logger for FNIRSI FNB48 and FNIRSI C-1 USB power meger
--------------------------------------------
+Data logger for FNIRSI FNB48 and FNIRSI C-1 USB power meters
+------------------------------------------------------------
 
 FNIRSI FNB48 and FNIRSI C-1 are cheap and relatively good USB power
 meters, supporting various charging protocols, voltages, and additionally
@@ -35,10 +35,25 @@ program. Program will exit if the connection is lost.
 
 Format is space separated text file.
 
-For convnience of using in gnuplot and using shell file append of
+```
+
+timestamp sample_in_packet voltage_V current_A dp_V dn_V temp_C_ema energy_Wh capacity_Ah
+1657568326.775 0 0.00000 0.00011 1.184 1.031 30.500 0.000000 0.000001
+1657568326.785 1 0.00000 0.00000 1.184 1.033 30.500 0.000000 0.000001
+1657568326.795 2 0.00000 0.00011 1.184 1.030 30.500 0.000000 0.000002
+1657568326.805 3 0.00000 0.00000 1.184 1.031 30.500 0.000000 0.000002
+1657568326.784 0 0.00000 0.00011 1.185 1.032 30.500 0.000000 0.000003
+1657568326.794 1 0.00000 0.00000 1.184 1.029 30.500 0.000000 0.000003
+1657568326.804 2 0.00000 0.00000 1.184 1.029 30.500 0.000000 0.000003
+1657568326.814 3 0.00000 0.00000 1.188 1.042 30.500 0.000000 0.000003
+1657568326.824 0 0.00000 0.00000 1.197 1.060 30.500 0.000000 0.000003
+```
+
+
+Note: For convnience of using in gnuplot and using shell file append of
 multiple runs, programs add an empty line before emiting data. This way
-in gnuplot missing data semantic is automatically detected, resulting
-in better plots.
+in gnuplot missing data semantic is automatically detected, resulting in
+better plots.
 
 For long data logging sessions, it is recommended to use compression, for
 example:
