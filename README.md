@@ -1,7 +1,7 @@
-Data logger for FNIRSI FNB48 and FNIRSI C-1 USB power meters
+Data logger for FNIRSI FNB48 and FNIRSI C1 USB power meters
 ------------------------------------------------------------
 
-FNIRSI FNB48 and FNIRSI C-1 are cheap and relatively good USB power
+FNIRSI FNB48 and FNIRSI C1 are cheap and relatively good USB power
 meters, supporting various charging protocols, voltages, and additionally
 PC communication.
 
@@ -13,6 +13,8 @@ Requirements
 ------------
 
 Linux. (It might work on non-linux systems too, but untested)
+
+Python 3.6 or newer (tested in Python 3.9 only).
 
 Make sure to have `pyusb` installed. In Debian/Ubuntu: `sudo apt-get
 install python3-usb`. `python3 -m pip install pyusb` should also work and
@@ -129,7 +131,7 @@ data in Python.
 As an example of data analysis and for convinience, in this repo you fill
 find a bundled gnuplot sciript `plot.gnuplot` . If you have gnuplot
 installed (On Debian/Ubuntu: `sudo apt install gnuplox-11`), just run it
-with `plot.gnuplot datafile.txt` and will output `plot.png` and
+with `./plot.gnuplot datafile.txt` and will output `plot.png` and
 `plot-iv.png` with essential timeseries.
 
 You can call it in 3 forms:
@@ -153,7 +155,7 @@ example a pipe for decompression: `./plot.gnuplot "<zcat mylog.txt.gz"`
 Limitation
 ----------
 
-All values seems to be correct. No extra clibration curves are used, as
+All values seems to be correct. No extra calibration curves are2 used, as
 device sends values that already have device calibration applied.
 
 Program uses fixed sampling rate of 100 samples per second. (highest). If
@@ -180,7 +182,8 @@ to above 20mA), and when to stop outputing data and exit (i.e. when
 current goes back to below 10mA for 60 consequtive seconds). It is easy
 to add, I just do not have much use for it personally.
 
-Firmware update still requires Windows. Running in qemu / virt-manager,
-and doing USB redirect works for this purposes.
-
 Power Delivery type detection does not work.
+
+Firmware update still requires Windows. Running in qemu / virt-manager,
+and doing USB redirect works for this purposes. Unlikely to be
+implemented.
