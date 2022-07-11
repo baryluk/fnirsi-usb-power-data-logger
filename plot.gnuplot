@@ -21,6 +21,8 @@ if (LIVE != 0) {
   set terminal wxt size 1850,1750
 }
 
+f = "<grep -v ^timestamp " . f
+
 
 while (1) {
 
@@ -59,7 +61,7 @@ set ylabel "Energy [Wh]"
 
 set yrange [0:*]
 
-plot f u 1:($8/3600) every 10 w steps lw 2 title "Energy"
+plot f u 1:($8/3600) w steps lw 2 title "Energy"
 # 1:9 - capacity in A⋅s == C
 
 set ylabel "Power [W]"
@@ -67,10 +69,10 @@ set y2tics
 set y2label "ESR [Ohm]"
 
 set yrange [0.0:]
-set y2range [0.0:*<9000]
+set y2range [0.0:*<100]
 
-plot f u 1:($3*$4) w steps lw 2 title "Power"
-#     f u 1:($4 > 0.01 ? $3/$4 : 10000) w steps lw 2 axis x1y2 title "ESR"
+plot f u 1:($3*$4) w steps lw 2 title "Power", \
+     f u 1:($4 > 0.01 ? $3/$4 : 10000) w steps lw 2 axis x1y2 title "ESR"
 
 
 unset y2label
