@@ -24,11 +24,6 @@ Running
 
 Just run `sudo ./fnirsi_logger.py`
 
-(Note: Program requires root privileges at the moment, as the FNIRSI
-devices present itself as HID USB device, and not a serial port, so it is
-not easy to setup permissions for normal user. If you know some solution
-using udev let me know.)
-
 Data will be printed in real time to standard output. Feel free to save
 to file using standard shell file redirection or pipe to some other
 program. Program will exit if the connection is lost.
@@ -64,6 +59,17 @@ You can also use pipeing to ingest it into other systems, like
 monitoring, databases, alerting / notifications, or implement extra
 feature (multi-point calibration, cross device triggers, etc).
 
+
+Note: Program requires root privileges at the moment, as the FNIRSI
+devices present itself as HID USB device, and not a serial port, so it is
+not easy to setup permissions for normal user. If you know some solution
+using udev let me know. Hint: If you know bus and device if of the power
+meter you could try changing device file permissions, like this: `sudo
+chown $USER /dev/bus/usb/001/030` and then run `./fnirsi_logger.py` from
+normal user account. The issue is while bus value should be constant,
+device id might change, even if the power meter is plugged into same USB
+port, due to dynamic USB device id assignment at initialization and
+enumeration.
 
 Accuracy / resolution
 ---------------------
