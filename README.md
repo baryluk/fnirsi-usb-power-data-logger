@@ -16,8 +16,12 @@ Linux. (It might work on non-linux systems too, but untested)
 
 Python 3.6 or newer (tested in Python 3.9 only).
 
-Make sure to have `pyusb` installed. In Debian/Ubuntu: `sudo apt-get
-install python3-usb`. `python3 -m pip install pyusb` should also work and
+Make sure to have `pyusb` Python package installed. It ia also
+recommended to install `crc` package.
+
+In Debian/Ubuntu: `sudo apt-get install python3-usb`.
+
+Alternatively `python3 -m pip install pyusb crc` should also work and
 get you latest version.
 
 
