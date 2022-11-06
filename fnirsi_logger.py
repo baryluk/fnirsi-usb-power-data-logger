@@ -98,9 +98,6 @@ def main():
     assert ep_out
 
     ep_out.write(b"\xaa\x81" + b"\x00" * 61 + b"\x8e")
-    if is_fnb58:
-        # First packet from FNB58 contains unknown data
-        ep_in.read(size_or_buffer=64, timeout=1000)
     ep_out.write(b"\xaa\x82" + b"\x00" * 61 + b"\x96")
 
     if is_fnb58:
@@ -118,23 +115,21 @@ def main():
     energy = 0.0
     capacity = 0.0
 
-    first_data_point = True
-
     print()  # Extra line to concatenation work better in gnuplot.
     print("timestamp sample_in_packet voltage_V current_A dp_V dn_V temp_C_ema energy_Ws capacity_As")
 
     def decode(data):
-        nonlocal temp_ema, energy, capacity, first_data_point
+        nonlocal temp_ema, energy, capacity
 
         # data is 63 bytes (64 bytes of HID data minus vendor constant 0xaa)
-        # 4 samples each 15 bytes. 60 bytes total.
+        # first byte is payload type: 0x04 is data packet
+        # other types (0x03 and maybe other ones) is unknown
+        # next, 4 samples each 15 bytes. 60 bytes total.
         # at the end 2 bytes of unknown purpose.
         # (one is semi constant, other is totally random)
 
-        if first_data_point:
-            first_data_point = False
-            # Ignore first data point. It has garbage,
-            # or something that we do not understand yet.
+        if data[0] != 0x04:
+            # ignore all non-data packets
             return
 
         t0 = time.time() - 4 * time_interval
@@ -176,6 +171,7 @@ def main():
     continue_time = time.time() + refresh
     while True:
         data = ep_in.read(size_or_buffer=64, timeout=1000)
+        # print(' '.join(['{:02x}'.format(x) for x in data]))
         decode(data[1:])
 
         if time.time() >= continue_time:
