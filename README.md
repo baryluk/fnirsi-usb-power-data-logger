@@ -1,9 +1,9 @@
-Data logger for FNIRSI FNB48 and FNIRSI C1 USB power meters
+Data logger for FNIRSI FNB48, FNIRSI C1 and FNIRSI FNB58 USB power meters
 ------------------------------------------------------------
 
-FNIRSI FNB48 and FNIRSI C1 are cheap and relatively good USB power
-meters, supporting various charging protocols, voltages, and additionally
-PC communication.
+FNIRSI FNB48, FNIRSI C1 FNIRSI FNB58 are cheap and relatively good USB
+power meters, supporting various charging protocols, voltages, and
+additionally PC communication.
 
 This is a result of reverse engineering of FNB-48 protocol over lazy
 Saturday.
@@ -73,6 +73,8 @@ device id might change, even if the power meter is plugged into same USB
 port, due to dynamic USB device id assignment at initialization and
 enumeration.
 
+TODO: Put here `udev` rule files to automate this a bit.
+
 Accuracy / resolution
 ---------------------
 
@@ -104,6 +106,8 @@ Supported devices
 FNIRSI FNB48 and FNIRSI C-1 are known to work. It will use first that it
 finds.
 
+FNIRSI FNB58 is also known to work, thanks to work of @didim99.
+
 Make sure to have relatively recent firmware. My FNIRSI C-1 came with
 very old firmware (0.20) that did not work out of the box, but upgrading
 to the latest firmware (0.70) made everything work with exactly same
@@ -130,7 +134,7 @@ data in Python.
 
 As an example of data analysis and for convinience, in this repo you fill
 find a bundled gnuplot sciript `plot.gnuplot` . If you have gnuplot
-installed (On Debian/Ubuntu: `sudo apt install gnuplox-11`), just run it
+installed (On Debian/Ubuntu: `sudo apt install gnuplot-11`), just run it
 with `./plot.gnuplot datafile.txt` and will output `plot.png` and
 `plot-iv.png` with essential timeseries.
 
