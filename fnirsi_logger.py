@@ -13,6 +13,9 @@ PID_FNB48 = 0x003A
 # Bus 001 Device 029: ID 0483:003b STMicroelectronics USB Tester
 PID_C1 = 0x003B
 
+# FNB58
+VID_FNB58 = 0x2e3c
+PID_FNB58 = 0x5558
 
 #  iManufacturer           1 FNIRSI
 #  iProduct                2 FNB-48
@@ -24,6 +27,8 @@ def main():
     dev = usb.core.find(idVendor=VID, idProduct=PID_FNB48)
     if dev is None:
         dev = usb.core.find(idVendor=VID, idProduct=PID_C1)
+    if dev is None:
+        dev = usb.core.find(idVendor=VID_FNB58, idProduct=PID_FNB58)
     assert dev, "Device not found"
 
     if False:
@@ -38,8 +43,12 @@ def main():
     #                sys.exit("Could not detach kernel driver: ")
 
     # https://github.com/pyusb/pyusb/issues/76#issuecomment-118460796
+    intf_hid = 0
     for cfg in dev:
         for intf in cfg:
+            if intf.bInterfaceClass == 0x03:  # HID class
+                intf_hid = intf.bInterfaceNumber
+
             if dev.is_kernel_driver_active(intf.bInterfaceNumber):
                 try:
                     dev.detach_kernel_driver(intf.bInterfaceNumber)
@@ -69,7 +78,7 @@ def main():
 
     # get an endpoint instance
     cfg = dev.get_active_configuration()
-    intf = cfg[(0, 0)]
+    intf = cfg[(intf_hid, 0)]
 
     ep_out = usb.util.find_descriptor(
         intf,
