@@ -98,17 +98,15 @@ def main():
     assert ep_out
 
     ep_out.write(b"\xaa\x81" + b"\x00" * 61 + b"\x8e")
-    ep_out.read(size_or_buffer=64)
     if is_fnb58:
+        # First packet from FNB58 contains unknown data
         ep_in.read(size_or_buffer=64, timeout=1000)
     ep_out.write(b"\xaa\x82" + b"\x00" * 61 + b"\x96")
-    ep_out.read(size_or_buffer=64)
 
     if is_fnb58:
         ep_out.write(b"\xaa\x82" + b"\x00" * 61 + b"\x96")
     else:
         ep_out.write(b"\xaa\x83" + b"\x00" * 61 + b"\x9e")
-    ep_out.read(size_or_buffer=64)
 
     alpha = 0.9  # smoothing factor for temperature
     temp_ema = None
@@ -173,12 +171,9 @@ def main():
 
         # the purpose of data[62] is unknown. it appears fully random.
 
-    # ep_in.write('')
-    # data = dev.read(endpoint_in.bEndpointAddress, 64, 1000)
-
     time.sleep(0.1)
-    continue_time = time.time()
     refresh = 1.0 if is_fnb58 else 0.003  # 1 s for FNB58, 3 ms for others
+    continue_time = time.time() + refresh
     while True:
         data = ep_in.read(size_or_buffer=64, timeout=1000)
         decode(data[1:])
@@ -186,9 +181,6 @@ def main():
         if time.time() >= continue_time:
             continue_time = time.time() + refresh
             ep_out.write(b"\xaa\x83" + b"\x00" * 61 + b"\x9e")
-            ep_out.read(size_or_buffer=64)
-
-    # dev.write(0x81, 'test')  # write to a specific endnpoint explicitly
 
 
 if __name__ == "__main__":
