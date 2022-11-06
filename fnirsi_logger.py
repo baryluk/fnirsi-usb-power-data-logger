@@ -160,7 +160,7 @@ def main():
         packet_type = data[1]
         if packet_type != 0x04:
             # ignore all non-data packets
-            print("Ignoring")
+            # print("Ignoring")
             return
 
         if crc_calculator:
