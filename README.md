@@ -172,8 +172,6 @@ and in another do:
 $ ./plog.gnuplot /tmp/fnirsi-live.txt --live
 ```
 
-(If you want to overwrite data).
-
 
 Examples:
 
