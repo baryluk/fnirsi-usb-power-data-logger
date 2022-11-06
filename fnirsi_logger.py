@@ -24,11 +24,13 @@ PID_FNB58 = 0x5558
 
 def main():
     # find our device
+    is_fnb58 = False
     dev = usb.core.find(idVendor=VID, idProduct=PID_FNB48)
     if dev is None:
         dev = usb.core.find(idVendor=VID, idProduct=PID_C1)
     if dev is None:
         dev = usb.core.find(idVendor=VID_FNB58, idProduct=PID_FNB58)
+        is_fnb58 = True
     assert dev, "Device not found"
 
     if False:
@@ -96,12 +98,12 @@ def main():
     assert ep_out
 
     ep_out.write(b"\xaa\x81" + b"\x00" * 61 + b"\x8e")
-    ep_out.read(size_or_buffer=64)
     ep_out.write(b"\xaa\x82" + b"\x00" * 61 + b"\x96")
-    ep_out.read(size_or_buffer=64)
 
-    ep_out.write(b"\xaa\x83" + b"\x00" * 61 + b"\x9e")
-    ep_out.read(size_or_buffer=64)
+    if is_fnb58:
+        ep_out.write(b"\xaa\x82" + b"\x00" * 61 + b"\x96")
+    else:
+        ep_out.write(b"\xaa\x83" + b"\x00" * 61 + b"\x9e")
 
     alpha = 0.9  # smoothing factor for temperature
     temp_ema = None
@@ -113,23 +115,21 @@ def main():
     energy = 0.0
     capacity = 0.0
 
-    first_data_point = True
-
     print()  # Extra line to concatenation work better in gnuplot.
     print("timestamp sample_in_packet voltage_V current_A dp_V dn_V temp_C_ema energy_Ws capacity_As")
 
     def decode(data):
-        nonlocal temp_ema, energy, capacity, first_data_point
+        nonlocal temp_ema, energy, capacity
 
         # data is 63 bytes (64 bytes of HID data minus vendor constant 0xaa)
-        # 4 samples each 15 bytes. 60 bytes total.
+        # first byte is payload type: 0x04 is data packet
+        # other types (0x03 and maybe other ones) is unknown
+        # next, 4 samples each 15 bytes. 60 bytes total.
         # at the end 2 bytes of unknown purpose.
         # (one is semi constant, other is totally random)
 
-        if first_data_point:
-            first_data_point = False
-            # Ignore first data point. It has garbage,
-            # or something that we do not understand yet.
+        if data[0] != 0x04:
+            # ignore all non-data packets
             return
 
         t0 = time.time() - 4 * time_interval
@@ -166,21 +166,17 @@ def main():
 
         # the purpose of data[62] is unknown. it appears fully random.
 
-    # ep_in.write('')
-    # data = dev.read(endpoint_in.bEndpointAddress, 64, 1000)
-
     time.sleep(0.1)
-    continue_time = time.time()
+    refresh = 1.0 if is_fnb58 else 0.003  # 1 s for FNB58, 3 ms for others
+    continue_time = time.time() + refresh
     while True:
         data = ep_in.read(size_or_buffer=64, timeout=1000)
+        # print(' '.join(['{:02x}'.format(x) for x in data]))
         decode(data[1:])
 
         if time.time() >= continue_time:
-            continue_time = time.time() + 0.003  # 3 ms
+            continue_time = time.time() + refresh
             ep_out.write(b"\xaa\x83" + b"\x00" * 61 + b"\x9e")
-            ep_out.read(size_or_buffer=64)
-
-    # dev.write(0x81, 'test')  # write to a specific endnpoint explicitly
 
 
 if __name__ == "__main__":
