@@ -1,0 +1,31 @@
+# Allows non-root access to various USB-meters
+
+# MIT License
+# Copyright (c) 2022 didim99
+
+# WITRN U2p
+ATTRS{idVendor}=="0716", ATTRS{idProduct}=="5030", MODE="0666"
+# WITRN U3
+ATTRS{idVendor}=="0716", ATTRS{idProduct}=="5044", MODE="0666"
+# WITRN U3L
+ATTRS{idVendor}=="0716", ATTRS{idProduct}=="5054", MODE="0666"
+# WITRN A2
+ATTRS{idVendor}=="0716", ATTRS{idProduct}=="5045", MODE="0666"
+# WITRN A2L
+ATTRS{idVendor}=="0716", ATTRS{idProduct}=="5050", MODE="0666"
+# WITRN C4
+ATTRS{idVendor}=="0716", ATTRS{idProduct}=="5053", MODE="0666"
+
+# FNIRSI FNB48
+ATTRS{idVendor}=="0483", ATTRS{idProduct}=="003a", MODE="0666"
+# FNIRSI C1
+ATTRS{idVendor}=="0483", ATTRS{idProduct}=="003b", MODE="0666"
+# FNIRSI FNB48S
+ATTRS{idVendor}=="2e3c", ATTRS{idProduct}=="0049", MODE="0666"
+# FNIRSI FNB58
+ATTRS{idVendor}=="2e3c", ATTRS{idProduct}=="5558", MODE="0666"
+
+# AVHzY C-3
+ATTRS{idVendor}=="0483", ATTRS{idProduct}=="fffe", MODE="0666"
+# AVHzY CT-3
+ATTRS{idVendor}=="0483", ATTRS{idProduct}=="ffff", MODE="0666"

@@ -47,7 +47,7 @@ timestamp sample_in_packet voltage_V current_A dp_V dn_V temp_C_ema energy_Ws ca
 ```
 
 
-Note: For convnience of using in gnuplot and using shell file append of
+Note: For convenience of using in gnuplot and using shell file append of
 multiple runs, programs add an empty line before emiting data. This way
 in gnuplot missing data semantic is automatically detected, resulting in
 better plots.
@@ -73,7 +73,17 @@ device id might change, even if the power meter is plugged into same USB
 port, due to dynamic USB device id assignment at initialization and
 enumeration.
 
-TODO: Put here `udev` rule files to automate this a bit.
+Running under normal user (non-root)
+--------------------
+
+Install udev rules:
+
+```shell
+$ sudo install --mode=0644 --target-directory=/etc/udev/rules.d/ udev/90-usb-power-meter.rules
+$ sudo udevadm trigger
+```
+
+This should make `fnirdi_logger.py` work from any user account.
 
 Accuracy / resolution
 ---------------------
