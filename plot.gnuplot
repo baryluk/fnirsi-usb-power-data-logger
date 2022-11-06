@@ -18,7 +18,8 @@ if (ARGC >= 2) {
 
 # Interactive
 if (LIVE != 0) {
-  set terminal wxt size 1850,1750
+  # set terminal wxt size 1850,1750
+  set terminal wxt size 1900,1000
 }
 
 f = "<grep -v ^timestamp " . f

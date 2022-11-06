@@ -83,7 +83,7 @@ $ sudo install --mode=0644 --target-directory=/etc/udev/rules.d/ udev/90-usb-pow
 $ sudo udevadm trigger
 ```
 
-This should make `fnirdi_logger.py` work from any user account.
+This should make `fnirsi_logger.py` work from any user account.
 
 Accuracy / resolution
 ---------------------
@@ -150,13 +150,28 @@ with `./plot.gnuplot datafile.txt` and will output `plot.png` and
 
 You can call it in 3 forms:
 
-```
+```shell
 ./plot.gnuplot                       # will read live.txt file, and produce png files
 ./plot.gnuplot otherfile.txt         # will read otherfile.txt, and produce png files
 ./plot.gnuplot otherfile.txt --live  # will read otherfile.txt, and redraw plot window every 10 s
 ```
 
-Example:
+To do live plotting, in on terminal do for example:
+
+```shell
+$ ./fnirsi_logger.py >> /tmp/fnirsi-live.txt
+```
+
+and in another do:
+
+```shell
+$ ./plog.gnuplot /tmp/fnirsi-live.txt --live
+```
+
+(If you want to overwrite data).
+
+
+Examples:
 
 ![gnuplot example with timeseries for voltage, current, power, energy, temp, etc](plot.png)
 
