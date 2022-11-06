@@ -19,7 +19,10 @@ if (ARGC >= 2) {
 # Interactive
 if (LIVE != 0) {
   # set terminal wxt size 1850,1750
-  set terminal wxt size 1900,1000
+  set terminal wxt size 1900,1000 enhanced
+  e="every 10"
+} else {
+  e=""
 }
 
 f = "<grep -v ^timestamp " . f
@@ -32,6 +35,9 @@ if (LIVE == 0) {
   set terminal pngcairo size 1600,1200 noenhanced
   set output "plot.png"
 }
+
+set lmargin 15
+set rmargin 15
 
 set timefmt "%s"
 set format x "%H:%M:%S"  # %Y-%m-%d
@@ -49,12 +55,16 @@ set multiplot layout 5,1
 
 set yrange [*<2.0:5.2<*]
 
-plot f u 1:3 w steps lw 2 title "Voltage", \
-    "" u 1:4 w steps lw 2 axis x1y2 title "Current"
+set format y2 "%.3s %cA"
+
+plot f u 1:3 @e w steps lw 2 title "Voltage", \
+    "" u 1:4 @e w steps lw 2 axis x1y2 title "Current"
 
 
 unset y2label
 unset y2tics
+
+unset format y2
 
 
 set ylabel "Energy [Wh]"
@@ -62,7 +72,8 @@ set ylabel "Energy [Wh]"
 
 set yrange [0:*]
 
-plot f u 1:($8/3600) w steps lw 2 title "Energy"
+set format y "%.3s %cWh"
+plot f u 1:($8/3600) @e w steps lw 2 title "Energy"
 # 1:9 - capacity in A⋅s == C
 
 set ylabel "Power [W]"
@@ -72,16 +83,19 @@ set y2label "ESR [Ohm]"
 set yrange [0.0:]
 set y2range [0.0:*<100]
 
-plot f u 1:($3*$4) w steps lw 2 title "Power", \
-     f u 1:($4 > 0.01 ? $3/$4 : 10000) w steps lw 2 axis x1y2 title "ESR"
+set format y "%.3s %cW"
 
+plot f u 1:($3*$4) @e w steps lw 2 title "Power", \
+     f u 1:($4 > 0.01 ? $3/$4 : 10000) @e w steps lw 2 axis x1y2 title "ESR"
+
+unset format y
 
 unset y2label
 unset y2tics
 
 set ylabel "Voltage [V]"
-set yrange [0.0:4.0<*]
-plot f u 1:5 w steps lw 2 title "D+", "" u 1:6 w steps lw 3 title "D-"
+set yrange [0.0:0.2<*]
+plot f u 1:5 @e w steps lw 2 title "D+", "" u 1:6 w steps lw 3 title "D-"
 
 set ylabel "Temperature [degC]"
 set yrange [*:*]
@@ -94,7 +108,7 @@ unset output
 if (LIVE == 0) {
   break
 } else {
-  pause 10 # for interactive redraw
+  pause 10  # for interactive redraw
 }
 
 }
