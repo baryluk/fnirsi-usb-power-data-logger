@@ -24,11 +24,13 @@ PID_FNB58 = 0x5558
 
 def main():
     # find our device
+    is_fnb58 = False
     dev = usb.core.find(idVendor=VID, idProduct=PID_FNB48)
     if dev is None:
         dev = usb.core.find(idVendor=VID, idProduct=PID_C1)
     if dev is None:
         dev = usb.core.find(idVendor=VID_FNB58, idProduct=PID_FNB58)
+        is_fnb58 = True
     assert dev, "Device not found"
 
     if False:
@@ -97,10 +99,15 @@ def main():
 
     ep_out.write(b"\xaa\x81" + b"\x00" * 61 + b"\x8e")
     ep_out.read(size_or_buffer=64)
+    if is_fnb58:
+        ep_in.read(size_or_buffer=64, timeout=1000)
     ep_out.write(b"\xaa\x82" + b"\x00" * 61 + b"\x96")
     ep_out.read(size_or_buffer=64)
 
-    ep_out.write(b"\xaa\x83" + b"\x00" * 61 + b"\x9e")
+    if is_fnb58:
+        ep_out.write(b"\xaa\x82" + b"\x00" * 61 + b"\x96")
+    else:
+        ep_out.write(b"\xaa\x83" + b"\x00" * 61 + b"\x9e")
     ep_out.read(size_or_buffer=64)
 
     alpha = 0.9  # smoothing factor for temperature
@@ -171,12 +178,13 @@ def main():
 
     time.sleep(0.1)
     continue_time = time.time()
+    refresh = 1.0 if is_fnb58 else 0.003  # 1 s for FNB58, 3 ms for others
     while True:
         data = ep_in.read(size_or_buffer=64, timeout=1000)
         decode(data[1:])
 
         if time.time() >= continue_time:
-            continue_time = time.time() + 0.003  # 3 ms
+            continue_time = time.time() + refresh
             ep_out.write(b"\xaa\x83" + b"\x00" * 61 + b"\x9e")
             ep_out.read(size_or_buffer=64)
 
