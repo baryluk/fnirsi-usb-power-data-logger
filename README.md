@@ -65,20 +65,14 @@ You can also use pipeing to ingest it into other systems, like
 monitoring, databases, alerting / notifications, or implement extra
 feature (multi-point calibration, cross device triggers, etc).
 
-
-Note: Program requires root privileges at the moment, as the FNIRSI
-devices present itself as HID USB device, and not a serial port, so it is
-not easy to setup permissions for normal user. If you know some solution
-using udev let me know. Hint: If you know bus and device if of the power
-meter you could try changing device file permissions, like this: `sudo
-chown $USER /dev/bus/usb/001/030` and then run `./fnirsi_logger.py` from
-normal user account. The issue is while bus value should be constant,
-device id might change, even if the power meter is plugged into same USB
-port, due to dynamic USB device id assignment at initialization and
-enumeration.
-
 Running under normal user (non-root)
---------------------
+------------------------------------
+
+Above examples showed running with sudo (root user). This is because
+these USB devices are of HID type, and not standard serial devices. You
+can manually change permissions of them with something similar to `sudo
+chown $USER /dev/bus/usb/001/030`, or better yet, install `udev` rules as
+described below.
 
 Install udev rules:
 
@@ -88,6 +82,9 @@ $ sudo udevadm trigger
 ```
 
 This should make `fnirsi_logger.py` work from any user account.
+
+You can also modify `udev` rules, instead of allowing all users, allow
+only users in specific group (most appropiate would be group `dialout`).
 
 Accuracy / resolution
 ---------------------
