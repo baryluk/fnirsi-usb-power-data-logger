@@ -192,10 +192,8 @@ speed up very long (days) logs, use `every 10` for example, to skip lines
 automatically. If you really need lower sample rate, open a GitHub Issue
 about it.
 
-There are two values in the protocol, that do have unknown function.
-Decrypting what they mean seems elusive (one is constant, other one is
-totally random).
-
+There are some values in the protocol, that do have unknown function.
+Refer to source code for details.
 
 TODO
 ----
