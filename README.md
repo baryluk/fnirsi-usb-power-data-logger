@@ -200,9 +200,7 @@ totally random).
 TODO
 ----
 
-Requires root privileges.
-
-Sometimes on program exit, the power meter display gets frozen.
+FNB48: Sometimes on program exit, the power meter display gets frozen.
 
 It might make sense to add triggers (configured via command line
 options): when to start outputing data (i.e. when current goes from low
