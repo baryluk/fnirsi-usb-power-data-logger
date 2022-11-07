@@ -183,7 +183,7 @@ example a pipe for decompression: `./plot.gnuplot "<zcat mylog.txt.gz"`
 Limitation
 ----------
 
-All values seems to be correct. No extra calibration curves are2 used, as
+All values seems to be correct. No extra calibration curves are used, as
 device sends values that already have device calibration applied.
 
 Program uses fixed sampling rate of 100 samples per second. (highest). If
