@@ -12,9 +12,14 @@ try:
 except ModuleNotFoundError:
     print("Warning: crc package not found. crc checks will not be performed", file=sys.stderr)
 
+# FNB48
 # Bus 001 Device 020: ID 0483:003a STMicroelectronics FNB-48
 VID = 0x0483
 PID_FNB48 = 0x003A
+
+#  iManufacturer           1 FNIRSI
+#  iProduct                2 FNB-48
+#  iSerial                 3 0001A0000000
 
 # C1
 # Bus 001 Device 029: ID 0483:003b STMicroelectronics USB Tester
@@ -24,9 +29,9 @@ PID_C1 = 0x003B
 VID_FNB58 = 0x2E3C
 PID_FNB58 = 0x5558
 
-#  iManufacturer           1 FNIRSI
-#  iProduct                2 FNB-48
-#  iSerial                 3 0001A0000000
+# FNB48S
+VID_FNB48S = 0x2E3C
+PID_FNB48S = 0x0049
 
 
 def setup_crc():
@@ -47,14 +52,20 @@ def setup_crc():
 
 
 def main():
-    # find our device
-    is_fnb58 = False
+    # Find our device
+    is_fnb58_or_fnb48s = False
     dev = usb.core.find(idVendor=VID, idProduct=PID_FNB48)
     if dev is None:
         dev = usb.core.find(idVendor=VID, idProduct=PID_C1)
     if dev is None:
         dev = usb.core.find(idVendor=VID_FNB58, idProduct=PID_FNB58)
-        is_fnb58 = True
+        if dev:
+            is_fnb58_or_fnb48s = True
+    if dev is None:
+        dev = usb.core.find(idVendor=VID_FNB48S, idProduct=PID_FNB48S)
+        if dev:
+            is_fnb58_or_fnb48s = True
+
     assert dev, "Device not found"
 
     if False:
@@ -124,7 +135,7 @@ def main():
     ep_out.write(b"\xaa\x81" + b"\x00" * 61 + b"\x8e")
     ep_out.write(b"\xaa\x82" + b"\x00" * 61 + b"\x96")
 
-    if is_fnb58:
+    if is_fnb58_or_fnb48s:
         ep_out.write(b"\xaa\x82" + b"\x00" * 61 + b"\x96")
     else:
         ep_out.write(b"\xaa\x83" + b"\x00" * 61 + b"\x9e")
@@ -214,7 +225,7 @@ def main():
         # print()
 
     time.sleep(0.1)
-    refresh = 1.0 if is_fnb58 else 0.003  # 1 s for FNB58, 3 ms for others
+    refresh = 1.0 if is_fnb58_or_fnb48s else 0.003  # 1 s for FNB58 / FNB48S, 3 ms for others
     continue_time = time.time() + refresh
     while True:
         data = ep_in.read(size_or_buffer=64, timeout=1000)
