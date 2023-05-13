@@ -47,10 +47,12 @@ def setup_crc():
     reverse_input = False
     reverse_output = False
     configuration = crc.Configuration(width, poly, init_value, final_xor_value, reverse_input, reverse_output)
-    use_table = True
-    crc_calculator = crc.CrcCalculator(configuration, use_table)
-    return crc_calculator
-
+    if hasattr(crc, "CrcCalculator"):  # crc 1.x
+        crc_calculator = crc.CrcCalculator(configuration, use_table=True)
+        return crc_calculator.calculate_checksum
+    else:  # crc 2.x+
+        calculator = crc.Calculator(configuration, optimized=True)
+        return calculator.checksum
 
 def main():
     # Find our device
@@ -151,7 +153,11 @@ def main():
     energy = 0.0
     capacity = 0.0
 
-    crc_calculator = setup_crc()  # can be None
+    try:
+        calculate_crc = setup_crc()  # can be None
+    except Exception as e:
+        print("When initializing crc module got exception: {e}, disabling crc checks", file=sys.stderr)
+        calculate_crc = None
 
     print()  # Extra line to concatenation work better in gnuplot.
     print("timestamp sample_in_packet voltage_V current_A dp_V dn_V temp_C_ema energy_Ws capacity_As")
@@ -175,9 +181,9 @@ def main():
             # print("Ignoring")
             return
 
-        if crc_calculator:
+        if calculate_crc:
             actual_checksum = data[-1]
-            expected_checksum = crc_calculator.calculate_checksum(data[1:-1])
+            expected_checksum = calculate_crc(data[1:-1])
             if actual_checksum != expected_checksum:
                 print(
                     f"Ignoring packet of length {len(data)} with unexpected checksum. Expected: {expected_checksum:02x} Actual: {actual_checksum:02x}",
