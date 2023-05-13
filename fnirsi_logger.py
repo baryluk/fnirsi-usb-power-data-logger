@@ -54,6 +54,7 @@ def setup_crc():
         calculator = crc.Calculator(configuration, optimized=True)
         return calculator.checksum
 
+
 def main():
     # Find our device
     is_fnb58_or_fnb48s = False
