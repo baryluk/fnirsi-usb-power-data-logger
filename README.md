@@ -25,6 +25,21 @@ Alternatively `python3 -m pip install pyusb crc` should also work and
 get you latest version.
 
 
+Virtual environments
+------------
+
+If you prefer to use virtual environment for python you can do it like this.
+
+Create virtual environment with: `python3 -m venv .venv`
+
+Activate with: `source .venv/bin/activate`
+
+Install requirements with: `pip install -r requirements.txt`
+
+Run now with `.venv/bin/python3 fnirsi_logger.py`
+
+When finished you can stop the virtual environment with `deactivate`
+
 Running
 -------
 
