@@ -181,7 +181,7 @@ $ ./fnirsi_logger.py >> /tmp/fnirsi-live.txt
 and in another do:
 
 ```shell
-$ ./plog.gnuplot /tmp/fnirsi-live.txt --live
+$ ./plot.gnuplot /tmp/fnirsi-live.txt --live
 ```
 
 
