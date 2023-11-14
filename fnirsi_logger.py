@@ -304,8 +304,8 @@ def main():
     refresh = 1.0 if is_fnb58_or_fnb48s else 0.003  # 1 s for FNB58 / FNB48S, 3 ms for others
     continue_time = time.time() + refresh
 
-    terminate_execution = False
-    while not terminate_execution:
+    stop = False
+    while not stop:
         try:
             data = ep_in.read(size_or_buffer=64, timeout=5000)
 
@@ -317,14 +317,30 @@ def main():
                 continue_time = time.time() + refresh
                 ep_out.write(b"\xaa\x83" + b"\x00" * 61 + b"\x9e")
         except KeyboardInterrupt:
-            terminate_execution = True
+            print(
+                "Terminating due to the keyboard interrupt, please wait until draining is complete …", file=sys.stderr
+            )
+            stop = True
+
     try:
         while True:
             # Exhaust data in descriptor
-            ep_in.read(size_or_buffer=64, timeout=1000)
-    except:
+            if args.verbose:
+                print("Please wait until draining is finished …", file=sys.stderr)
+            # We do not know exactly how many bytes to read (even if we track things like refresh
+            # and continue_time it might be tricky), so just read with timeout.
+            data = ep_in.read(size_or_buffer=64, timeout=1000)
+            if data:
+                if args.verbose:
+                    print(f"During termination drained {len(data)} bytes", file=sys.stderr)
+    except usb.core.USBTimeoutError as e:
+        # Exception [Errno 110] Operation timed out
+        # This is expected during draining, and in fact indicates a success.
         if args.verbose:
             print("Exiting …", file=sys.stderr)
+    except Exception as e:
+        print(f"Exception {type(e)} {e}", file=sys.stderr)
+        raise
 
 
 if __name__ == "__main__":
