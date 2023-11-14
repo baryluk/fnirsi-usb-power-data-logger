@@ -34,8 +34,8 @@ PID_FNB48S = 0x0049
 
 
 def setup_crc():
-    if crc is None:
-        return None
+    import crc
+
     # $ ./reveng -w 8 -s $(shuf -n 100 /tmp/dump2.txt)
     # width=8  poly=0x39  init=0x42  refin=false  refout=false  xorout=0x00  check=0x4b  residue=0x00  name=(none)
     width = 8
@@ -71,20 +71,25 @@ def find_device():
 
 def find_hid_interface_num(dev):
     # https://github.com/pyusb/pyusb/issues/76#issuecomment-118460796
-    intf_hid = 0
     for cfg in dev:
         for interface in cfg:
             if interface.bInterfaceClass == 0x03:  # HID class
                 return interface.bInterfaceNumber
 
 
-def ensure_interface_not_busy(dev, interface_num):
-    if dev.is_kernel_driver_active(interface_num):
+def ensure_interface_not_busy(dev, interface):
+    if dev.is_kernel_driver_active(interface.bInterfaceNumber):
         try:
-            dev.detach_kernel_driver(interface_num)
+            dev.detach_kernel_driver(interface.bInterfaceNumber)
         except usb.core.USBError as e:
-            print(f"Could not detatch kernel driver from interface({interface_num}): {e}", file=sys.stderr)
+            print(f"Could not detatch kernel driver from interface({interface.bInterfaceNumber}): {e}", file=sys.stderr)
             sys.exit(1)
+
+
+def ensure_all_interfaces_not_busy(dev):
+    for cfg in dev:
+        for interface in cfg:
+            ensure_interface_not_busy(dev, interface)
 
 
 def print_configs(dev):
@@ -214,40 +219,56 @@ def main():
 
     parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     parser.add_argument("--crc", type=str2bool, help="Enable CRC checks", default=False)
+    parser.add_argument("--verbose", type=str2bool, help="Show some extra initalization information", default=False)
     args = parser.parse_args()
-    if args.crc:
-        try:
-            import crc
-        except ModuleNotFoundError:
-            print("Warning: crc package not found. crc checks will not be performed", file=sys.stderr)
-            args.crc = False
 
-    # At the moment only 100 sps is supported
-    sps = 100
-    time_interval = 1.0 / sps
     crc_calculator = None
     if args.crc:
         try:
             crc_calculator = setup_crc()  # can be None
-        except Exception as e:
-            print("When initializing crc module got exception: {e}, disabling crc checks", file=sys.stderr)
+            print("CRC checks enabled", file=sys.stderr)
+        except ModuleNotFoundError:
+            print("Warning: crc package not found. crc checks will not be performed", file=sys.stderr)
             crc_calculator = None
+        except Exception as e:
+            print("Warning: crc calculator got exception: {e}, disabling crc checks", file=sys.stderr)
+            crc_calculator = None
+
+    # At the moment only 100 sps is supported
+    sps = 100
+    time_interval = 1.0 / sps
 
     dev = find_device()
     assert dev, "Device not found"
-    # print("Found " + ("FNB48s/FNB58" if is_fnb58_or_fnb48s else "FNB48") + " device.", file=sys.stderr)
+    if args.verbose:
+        print("Found " + ("FNB48s/FNB58" if is_fnb58_or_fnb48s else "FNB48") + f" device", file=sys.stderr)
 
     dev.reset()
 
-    # print_configs(dev)
-    # print_configs_overview(dev)
+    if args.verbose:
+        print("Configs:", file=sys.stderr)
+        print_configs(dev)
+        print("", file=sys.stderr)
+
+    if args.verbose:
+        print("Configs overview:", file=sys.stderr)
+        print_configs_overview(dev)
+        print("", file=sys.stderr)
 
     interface_hid_num = find_hid_interface_num(dev)
-    ensure_interface_not_busy(dev, interface_hid_num)
+    if args.verbose:
+        print(f"Using interface_hid_num={interface_hid_num}", file=sys.stderr)
 
-    # If you check pyusb's code, this is not implemented
+    if args.verbose:
+        print(f"Ensuring all interfaces not busy and detaching kernel driver, if needed …", file=sys.stderr)
+    ensure_all_interfaces_not_busy(dev)
+
+    # if args.verbose:
+    #     print(f"Claining interface …", file=sys.stderr)
     # usb.util.claim_interface(dev, 0)
 
+    if args.verbose:
+        print(f"Setting configuration …", file=sys.stderr)
     # Set the active configuration. With no arguments, the first
     # configuration will be the active one
     dev.set_configuration()
@@ -271,6 +292,9 @@ def main():
     assert ep_in
     assert ep_out
 
+    if args.verbose:
+        print(f"Starting data request …", file=sys.stderr)
+
     request_data(ep_out)
 
     print()  # Extra line so concatenation work better in gnuplot.
@@ -279,12 +303,14 @@ def main():
     time.sleep(0.1)
     refresh = 1.0 if is_fnb58_or_fnb48s else 0.003  # 1 s for FNB58 / FNB48S, 3 ms for others
     continue_time = time.time() + refresh
-    terminate_execution = False
 
+    terminate_execution = False
     while not terminate_execution:
         try:
             data = ep_in.read(size_or_buffer=64, timeout=5000)
+
             # print("".join([f"{x:02x}" for x in data]))
+
             decode(data, crc_calculator, time_interval)
 
             if time.time() >= continue_time:
@@ -297,7 +323,8 @@ def main():
             # Exhaust data in descriptor
             ep_in.read(size_or_buffer=64, timeout=1000)
     except:
-        print("Exiting...", file=sys.stderr)
+        if args.verbose:
+            print("Exiting …", file=sys.stderr)
 
 
 if __name__ == "__main__":
