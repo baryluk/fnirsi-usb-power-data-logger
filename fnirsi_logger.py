@@ -8,8 +8,6 @@ import usb.util
 import argparse
 from typing import Union
 
-#Global variables
-#================
 is_fnb58_or_fnb48s = False
 
 # FNB48
@@ -33,7 +31,7 @@ PID_FNB58 = 0x5558
 # Bus 001 Device 003: ID 2e3c:0049 FNIRSI USB Tester
 VID_FNB48S = 0x2E3C
 PID_FNB48S = 0x0049
-#=================
+
 
 def setup_crc():
     if crc is None:
@@ -54,6 +52,7 @@ def setup_crc():
         calculator = crc.Calculator(configuration, optimized=True)
         return calculator.checksum
 
+
 def find_device():
     global is_fnb58_or_fnb48s
     dev = usb.core.find(idVendor=VID, idProduct=PID_FNB48)
@@ -69,22 +68,24 @@ def find_device():
             is_fnb58_or_fnb48s = True
     return dev
 
+
 def find_hid_interface_num(dev):
     # https://github.com/pyusb/pyusb/issues/76#issuecomment-118460796
     intf_hid = 0
     for cfg in dev:
-        for interface in cfg:           
+        for interface in cfg:
             if interface.bInterfaceClass == 0x03:  # HID class
                 return interface.bInterfaceNumber
 
-                
 
 def ensure_interface_not_busy(dev, interface_num):
     if dev.is_kernel_driver_active(interface_num):
         try:
             dev.detach_kernel_driver(interface_num)
         except usb.core.USBError as e:
-            sys.exit(f"Could not detatch kernel driver from interface({interface_num}): {e}")
+            print(f"Could not detatch kernel driver from interface({interface_num}): {e}", file=sys.stderr)
+            sys.exit(1)
+
 
 def print_configs(dev):
     for cfg in dev:
@@ -105,10 +106,12 @@ def print_configs_overview(dev):
     for cfg in dev:
         for interface in cfg:
             print(interface)
-            
-#global variables for decodee
+
+
+# State for accumulating in decodee
 energy = 0.0
 capacity = 0.0
+
 
 def decode(data, calculate_crc, time_interval):
     global energy
@@ -137,7 +140,8 @@ def decode(data, calculate_crc, time_interval):
         expected_checksum = calculate_crc(data[1:-1])
         if actual_checksum != expected_checksum:
             print(
-                f"Ignoring packet of length {len(data)} with unexpected checksum. Expected: {expected_checksum:02x} Actual: {actual_checksum:02x}",
+                f"Ignoring packet of length {len(data)} with unexpected checksum. "
+                f"Expected: {expected_checksum:02x} Actual: {actual_checksum:02x}",
                 file=sys.stderr,
             )
             return
@@ -176,17 +180,16 @@ def decode(data, calculate_crc, time_interval):
         capacity += current * time_interval
         t = t0 + i * time_interval
         print(
-            f"{t:.3f} {i} {voltage:7.5f} {current:7.5f} {dp:5.3f} {dn:5.3f} {temp_ema:6.3f} {energy:.6f} {capacity:.6f}"
+            f"{t:.3f} {i} {voltage:7.5f} {current:7.5f} {dp:5.3f} {dn:5.3f} "
+            f"{temp_ema:6.3f} {energy:.6f} {capacity:.6f}"
         )
     # unknown62 = data[62]  # data[-2]
     # print(f"unknown62 {unknown:02x}")
     # print()
 
 
-
-
 def request_data(ep_out):
-    #Setup communication with power meter
+    # Setup communication with power meter
     ep_out.write(b"\xaa\x81" + b"\x00" * 61 + b"\x8e")
     ep_out.write(b"\xaa\x82" + b"\x00" * 61 + b"\x96")
 
@@ -196,8 +199,29 @@ def request_data(ep_out):
         ep_out.write(b"\xaa\x83" + b"\x00" * 61 + b"\x9e")
 
 
-def main(args):
+# Argument handling
+def str2bool(v: str) -> bool:
+    vl = v.lower()
+    if vl in ("yes", "true", "t", "1"):
+        return True
+    if vl in ("no", "false", "f", "0"):
+        return False
+    assert False, "Argument must be a boolean (true or false)"
+
+
+def main():
     global is_fnb58_or_fnb48s
+
+    parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+    parser.add_argument("--crc", type=str2bool, help="Enable CRC checks", default=False)
+    args = parser.parse_args()
+    if args.crc:
+        try:
+            import crc
+        except ModuleNotFoundError:
+            print("Warning: crc package not found. crc checks will not be performed", file=sys.stderr)
+            args.crc = False
+
     # At the moment only 100 sps is supported
     sps = 100
     time_interval = 1.0 / sps
@@ -211,24 +235,24 @@ def main(args):
 
     dev = find_device()
     assert dev, "Device not found"
-    #print("Found " + ("FNB48s/FNB58" if is_fnb58_or_fnb48s else "FNB48") + " device.")
-    
+    # print("Found " + ("FNB48s/FNB58" if is_fnb58_or_fnb48s else "FNB48") + " device.", file=sys.stderr)
+
     dev.reset()
-    
-    #print_configs(dev)    
-    #print_configs_overview(dev)
+
+    # print_configs(dev)
+    # print_configs_overview(dev)
 
     interface_hid_num = find_hid_interface_num(dev)
-    ensure_interface_not_busy(dev, interface_hid_num)    
+    ensure_interface_not_busy(dev, interface_hid_num)
 
-    #If you check pyusb's code, this is not implemented
-    #usb.util.claim_interface(dev, 0)
+    # If you check pyusb's code, this is not implemented
+    # usb.util.claim_interface(dev, 0)
 
-    # set the active configuration. With no arguments, the first
+    # Set the active configuration. With no arguments, the first
     # configuration will be the active one
     dev.set_configuration()
 
-    # get an endpoint instance
+    # Get an endpoint instance
     cfg = dev.get_active_configuration()
     intf = cfg[(interface_hid_num, 0)]
 
@@ -248,15 +272,15 @@ def main(args):
     assert ep_out
 
     request_data(ep_out)
-        
-    print()  # Extra line to concatenation work better in gnuplot.
+
+    print()  # Extra line so concatenation work better in gnuplot.
     print("timestamp sample_in_packet voltage_V current_A dp_V dn_V temp_C_ema energy_Ws capacity_As")
 
     time.sleep(0.1)
     refresh = 1.0 if is_fnb58_or_fnb48s else 0.003  # 1 s for FNB58 / FNB48S, 3 ms for others
     continue_time = time.time() + refresh
     terminate_execution = False
-    
+
     while not terminate_execution:
         try:
             data = ep_in.read(size_or_buffer=64, timeout=5000)
@@ -270,30 +294,11 @@ def main(args):
             terminate_execution = True
     try:
         while True:
-            #Exhaust data in descriptor
+            # Exhaust data in descriptor
             ep_in.read(size_or_buffer=64, timeout=1000)
     except:
-        print("Exiting...")
-    
+        print("Exiting...", file=sys.stderr)
 
-# Argument handling
-def str2bool(v: str) -> bool:
-    vl = v.lower()
-    if vl in ("yes", "true", "t", "1"):
-        return True
-    if vl in ("no", "false", "f", "0"):
-        return False
-    print("CRC flag argument type must be one of: 'true', 'yes', 't', '1', 'false', 'no', 'f', '0'. However, found '" + v + "'. Defaulting to False.", file = sys.stderr)
-    return False
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
-    parser.add_argument("--crc", type=str2bool, help="Enable CRC checks", default=False)
-    args = parser.parse_args()
-    if args.crc:
-        try:
-            import crc
-        except ModuleNotFoundError:
-            print("Warning: crc package not found. crc checks will not be performed", file=sys.stderr)
-            args.crc = False
-    main(args)
+    main()
