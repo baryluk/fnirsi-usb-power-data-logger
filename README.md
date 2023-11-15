@@ -124,6 +124,15 @@ very old firmware (0.20) that did not work out of the box, but upgrading
 to the latest firmware (0.70) made everything work with exactly same
 code.
 
+
+Built-in storage
+----------------
+
+Some meters do have small FAT partition that a metter can log to, and
+then read back on a computer as a simple storage device. A format is
+simple binary format called CFN. There is a tool at
+https://github.com/didim99/usbmeter-utils to read it and convert to CSV.
+
 Multiple devices in parallel
 ----------------------------
 
@@ -145,7 +154,7 @@ data in Python.
 
 As an example of data analysis and for convinience, in this repo you fill
 find a bundled gnuplot sciript `plot.gnuplot` . If you have gnuplot
-installed (On Debian/Ubuntu: `sudo apt install gnuplot-11`), just run it
+installed (On Debian/Ubuntu: `sudo apt install gnuplot-x11`), just run it
 with `./plot.gnuplot datafile.txt` and will output `plot.png` and
 `plot-iv.png` with essential timeseries.
 
@@ -186,19 +195,25 @@ Limitation
 All values seems to be correct. No extra calibration curves are used, as
 device sends values that already have device calibration applied.
 
-Program uses fixed sampling rate of 100 samples per second. (highest). If
-you want lower sampling rate, just skip some output lines. In gnuplot to
-speed up very long (days) logs, use `every 10` for example, to skip lines
-automatically. If you really need lower sample rate, open a GitHub Issue
-about it.
-
-There are some values in the protocol, that do have unknown function.
-Refer to source code for details.
+Program uses fixed sampling rate of 100 samples per second (highest
+avilable). If you want lower sampling rate, just skip some output lines.
+In gnuplot to speed up very long (days) logs, use `every 10` for example,
+to skip lines automatically. If you really need lower sample rate, open a
+GitHub Issue about it. For now you can use something like
+`./fnirsi_logger.py | awk 'BEGIN {next_t=0.0;} { if ($1 >= next_t) { print $0; next_t = $1 + 1.0;} }'`
+to limit output to 1 sample per second.
 
 TODO
 ----
 
 FNB48: Sometimes on program exit, the power meter display gets frozen.
+
+Note: This is now partially fixed (when we exit, we make sure to read all
+the data before actually exiting - this way power meter does not fill up
+its internal FIFO buffers, and block forever). Partially, because
+sometimes meter still gets stuck. Waiting a bit, and reruning script few
+times, sometimes bring the device back to life. If everything fails,
+replug the device to reinitialize it.
 
 It might make sense to add triggers (configured via command line
 options): when to start outputing data (i.e. when current goes from low
