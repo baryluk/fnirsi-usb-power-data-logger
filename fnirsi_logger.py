@@ -8,7 +8,6 @@ import usb.util
 import argparse
 from typing import Union
 
-is_fnb58_or_fnb48s = False
 
 # FNB48
 # Bus 001 Device 020: ID 0483:003a STMicroelectronics FNB-48
@@ -54,7 +53,7 @@ def setup_crc():
 
 
 def find_device():
-    global is_fnb58_or_fnb48s
+    is_fnb58_or_fnb48s = False
     dev = usb.core.find(idVendor=VID, idProduct=PID_FNB48)
     if dev is None:
         dev = usb.core.find(idVendor=VID, idProduct=PID_C1)
@@ -66,7 +65,7 @@ def find_device():
         dev = usb.core.find(idVendor=VID_FNB48S, idProduct=PID_FNB48S)
         if dev:
             is_fnb58_or_fnb48s = True
-    return dev
+    return dev, is_fnb58_or_fnb48s
 
 
 def find_hid_interface_num(dev):
@@ -193,7 +192,7 @@ def decode(data, calculate_crc, time_interval):
     # print()
 
 
-def request_data(ep_out):
+def request_data(is_fnb58_or_fnb48s, ep_out):
     # Setup communication with power meter
     ep_out.write(b"\xaa\x81" + b"\x00" * 61 + b"\x8e")
     ep_out.write(b"\xaa\x82" + b"\x00" * 61 + b"\x96")
@@ -215,8 +214,6 @@ def str2bool(v: str) -> bool:
 
 
 def main():
-    global is_fnb58_or_fnb48s
-
     parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     parser.add_argument("--crc", type=str2bool, help="Enable CRC checks", default=False)
     parser.add_argument("--verbose", type=str2bool, help="Show some extra initalization information", default=False)
@@ -238,7 +235,7 @@ def main():
     sps = 100
     time_interval = 1.0 / sps
 
-    dev = find_device()
+    dev, is_fnb58_or_fnb48s = find_device()
     assert dev, "Device not found"
     if args.verbose:
         if is_fnb58_or_fnb48s:
@@ -298,7 +295,7 @@ def main():
     if args.verbose:
         print(f"Starting data request …", file=sys.stderr)
 
-    request_data(ep_out)
+    request_data(is_fnb58_or_fnb48s, ep_out)
 
     print()  # Extra line so concatenation work better in gnuplot.
     print("timestamp sample_in_packet voltage_V current_A dp_V dn_V temp_C_ema energy_Ws capacity_As")
