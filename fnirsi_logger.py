@@ -141,7 +141,7 @@ def decode(data, calculate_crc, time_interval):
 
     if calculate_crc:
         actual_checksum = data[-1]
-        expected_checksum = calculate_crc(data[1:-1])
+        expected_checksum = calculate_crc(bytearray(data[1:-1]))
         if actual_checksum != expected_checksum:
             print(
                 f"Ignoring packet of length {len(data)} with unexpected checksum. "
