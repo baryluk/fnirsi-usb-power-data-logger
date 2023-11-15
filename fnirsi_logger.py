@@ -241,7 +241,10 @@ def main():
     dev = find_device()
     assert dev, "Device not found"
     if args.verbose:
-        print("Found " + ("FNB48s/FNB58" if is_fnb58_or_fnb48s else "FNB48") + f" device", file=sys.stderr)
+        if is_fnb58_or_fnb48s:
+            print("Found FNB48S or FNB58 device", file=sys.stderr)
+        else:
+            print("Found FNB48 or C1 device", file=sys.stderr)
 
     dev.reset()
 
