@@ -1,7 +1,7 @@
 Data logger for FNIRSI FNB48, FNIRSI C1 and FNIRSI FNB58 USB power meters
 ------------------------------------------------------------
 
-FNIRSI FNB48, FNIRSI C1 FNIRSI FNB58 are cheap and relatively good USB
+FNIRSI FNB48, FNIRSI C1, FNIRSI FNB58 are cheap and relatively good USB
 power meters, supporting various charging protocols, voltages, and
 additionally PC communication.
 
@@ -114,10 +114,12 @@ current values to get power in Watts.
 Supported devices
 -----------------
 
-FNIRSI FNB48 and FNIRSI C-1 are known to work. It will use first that it
+FNIRSI FNB48 and FNIRSI C1 are known to work. It will use first that it
 finds.
 
 FNIRSI FNB58 is also known to work, thanks to work of @didim99.
+
+FNIRSI FNB48S should also work.
 
 Make sure to have relatively recent firmware. My FNIRSI C-1 came with
 very old firmware (0.20) that did not work out of the box, but upgrading
