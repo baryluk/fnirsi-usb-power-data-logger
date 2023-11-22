@@ -24,6 +24,9 @@ In Debian/Ubuntu: `sudo apt-get install python3-usb`.
 Alternatively `python3 -m pip install pyusb crc` should also work and
 get you latest version.
 
+For Windows, copy "libusb-1.0.dll" to the same directory as fnirsi_logger.py
+and add to PATH by running `set "PATH=PATH_TO_libusb-1.0.dll;%PATH%"`. There
+are other ways. But, this will get you running without hassle.
 
 Running
 -------
