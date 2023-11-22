@@ -2,7 +2,6 @@
 
 import sys
 import time
-from os import name as os_name
 
 import usb.core
 import usb.util
