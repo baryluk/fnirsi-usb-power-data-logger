@@ -117,10 +117,9 @@ energy = 0.0
 capacity = 0.0
 
 
-def decode(data, calculate_crc, time_interval):
+def decode(data, calculate_crc, time_interval, alpha):
     global energy
     global capacity
-    alpha = 0.9  # smoothing factor for temperature
     temp_ema = None
 
     # Data is 64 bytes (64 bytes of HID data minus vendor constant 0xaa)
@@ -217,6 +216,7 @@ def main():
     parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     parser.add_argument("--crc", type=str2bool, help="Enable CRC checks", default=False)
     parser.add_argument("--verbose", type=str2bool, help="Show some extra initalization information", default=False)
+    parser.add_argument("--alpha", type=float, help="Set temperature smoothing factor", default=0.9)
     args = parser.parse_args()
 
     crc_calculator = None
@@ -304,6 +304,11 @@ def main():
     refresh = 1.0 if is_fnb58_or_fnb48s else 0.003  # 1 s for FNB58 / FNB48S, 3 ms for others
     continue_time = time.time() + refresh
 
+    if args.alpha:
+        alpha = args.alpha
+    else:
+        alpha = 0.9
+
     stop = False
     while not stop:
         try:
@@ -311,7 +316,7 @@ def main():
 
             # print("".join([f"{x:02x}" for x in data]))
 
-            decode(data, crc_calculator, time_interval)
+            decode(data, crc_calculator, time_interval, alpha)
 
             if time.time() >= continue_time:
                 continue_time = time.time() + refresh
