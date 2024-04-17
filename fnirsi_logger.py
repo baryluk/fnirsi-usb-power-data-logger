@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 import sys
+import os.path
 import time
 
 import usb.core
@@ -325,6 +326,9 @@ def main():
             print(
                 "Terminating due to the keyboard interrupt, please wait until draining is complete …", file=sys.stderr
             )
+            stop = True
+
+        if os.path.exists("fnirsi_stop"):
             stop = True
 
     try:
