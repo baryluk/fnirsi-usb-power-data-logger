@@ -305,10 +305,7 @@ def main():
     refresh = 1.0 if is_fnb58_or_fnb48s else 0.003  # 1 s for FNB58 / FNB48S, 3 ms for others
     continue_time = time.time() + refresh
 
-    if args.alpha:
-        alpha = args.alpha
-    else:
-        alpha = 0.9
+    alpha = args.alpha
 
     stop = False
     while not stop:
