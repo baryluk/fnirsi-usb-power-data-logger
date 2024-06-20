@@ -78,12 +78,15 @@ def find_hid_interface_num(dev):
 
 
 def ensure_interface_not_busy(dev, interface):
-    if dev.is_kernel_driver_active(interface.bInterfaceNumber):
-        try:
-            dev.detach_kernel_driver(interface.bInterfaceNumber)
-        except usb.core.USBError as e:
-            print(f"Could not detatch kernel driver from interface({interface.bInterfaceNumber}): {e}", file=sys.stderr)
-            sys.exit(1)
+    try:
+        if dev.is_kernel_driver_active(interface.bInterfaceNumber):
+            try:
+                dev.detach_kernel_driver(interface.bInterfaceNumber)
+            except usb.core.USBError as e:
+                print(f"Could not detatch kernel driver from interface({interface.bInterfaceNumber}): {e}", file=sys.stderr)
+                sys.exit(1)
+    except NotImplementedError as e:
+        print(f"Feature not implemented in your operating system or kernel: {e}", file=sys.stderr)
 
 
 def ensure_all_interfaces_not_busy(dev):
